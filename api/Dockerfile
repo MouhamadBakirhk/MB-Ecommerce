@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip-dev \
     pkg-config \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql mbstring tokenizer xml zip \
+    && docker-php-ext-install -j$(nproc) gd pdo_mysql mbstring xml zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache mod_rewrite
