@@ -1,17 +1,21 @@
 # Use official PHP image with Apache
 FROM php:8.2-apache
 
-# Install system dependencies and PHP extensions
-RUN apt-get update && apt-get install -y \
+# Fix Render build issues by setting noninteractive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies and PHP extensions safely
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
     libonig-dev \
     libzip-dev \
+    pkg-config \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring tokenizer xml gd zip \
+    && docker-php-ext-install -j$(nproc) gd pdo_mysql mbstring tokenizer xml zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache mod_rewrite
