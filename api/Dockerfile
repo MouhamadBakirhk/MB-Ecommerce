@@ -1,52 +1,45 @@
 # Use official PHP image with Apache
 FROM php:8.2-apache
 
-# Set non-interactive mode for apt
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    unzip \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libzip-dev \
-    libxml2-dev \
-    pkg-config \
+RUN apt-get update && apt-get install -y \
+    git unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    libonig-dev libzip-dev libxml2-dev pkg-config \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo_mysql mbstring xml zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache rewrite module
 RUN a2enmod rewrite
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Copy Laravel project
+# Copy full Laravel project
 COPY . .
 
-# Set correct Apache DocumentRoot to public
-RUN echo '<VirtualHost *:80>\n\
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install PHP dependencies
+RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
+
+# Set Apache DocumentRoot to Laravel public
+RUN printf '<VirtualHost *:80>\n\
+    ServerAdmin webmaster@localhost\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
         AllowOverride All\n\
         Require all granted\n\
     </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>\n' > /etc/apache2/sites-available/000-default.conf
 
-# Set permissions for storage & cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install Composer and dependencies
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+# Permissions
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
-# Expose Apache port
 EXPOSE 80
-
-# Start Apache
 CMD ["apache2-foreground"]
