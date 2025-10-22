@@ -23,11 +23,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
 
-# Set Apache DocumentRoot to Laravel public inside api folder
+ 
+# Set Apache DocumentRoot to Laravel public folder
 RUN printf '<VirtualHost *:80>\n\
     ServerAdmin webmaster@localhost\n\
-    DocumentRoot /var/www/html/api/public\n\
-    <Directory /var/www/html/api/public>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
         Options Indexes FollowSymLinks\n\
         AllowOverride All\n\
         Require all granted\n\
@@ -41,6 +42,6 @@ RUN printf '<VirtualHost *:80>\n\
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 8080
-CMD ["sh", "-c", "sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf && apache2-foreground"]
+EXPOSE 80
+CMD ["apache2-foreground"]
 
