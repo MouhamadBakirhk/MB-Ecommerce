@@ -23,11 +23,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
 
-# Set Apache DocumentRoot to Laravel public
+# Set Apache DocumentRoot to Laravel public inside api folder
 RUN printf '<VirtualHost *:80>\n\
     ServerAdmin webmaster@localhost\n\
-    DocumentRoot /var/www/html/public\n\
-    <Directory /var/www/html/public>\n\
+    DocumentRoot /var/www/html/api/public\n\
+    <Directory /var/www/html/api/public>\n\
         Options Indexes FollowSymLinks\n\
         AllowOverride All\n\
         Require all granted\n\
