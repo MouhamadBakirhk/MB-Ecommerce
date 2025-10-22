@@ -24,6 +24,7 @@ RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoload
 
 
  
+ 
 # Set Apache DocumentRoot to Laravel public folder
 RUN printf '<VirtualHost *:80>\n\
     ServerAdmin webmaster@localhost\n\
