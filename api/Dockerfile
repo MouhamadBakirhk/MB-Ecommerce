@@ -41,5 +41,6 @@ RUN printf '<VirtualHost *:80>\n\
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
-CMD ["apache2-foreground"]
+EXPOSE 8080
+CMD ["sh", "-c", "sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf && apache2-foreground"]
+
